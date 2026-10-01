@@ -48,13 +48,15 @@ impl DfxOrbit {
         }
 
         match base_info.operation {
+            RequestOperationDTO::CreateExternalCanister(op) => {
+                self.display_create_canister_operation(&mut output, op.as_ref())?;
+            }
             RequestOperationDTO::ChangeExternalCanister(op) => {
                 self.display_change_canister_operation(&mut output, op.as_ref())?;
             }
             RequestOperationDTO::CallExternalCanister(op) => {
                 self.display_call_canister_operation(&mut output, op.as_ref())?;
             }
-            // TODO: CreateCanister Additional information
             // TODO: ConfigureCanister Additional information
             _ => (),
         };
