@@ -3,15 +3,16 @@ use clap::{Parser, Subcommand};
 use station_api::{GetRequestResponse, RequestOperationInput};
 
 mod call;
+mod create;
 mod install;
 mod settings;
 mod util;
 
 pub use call::RequestCanisterCallArgs;
+pub use create::RequestCanisterCreateArgs;
 pub use install::{CanisterInstallModeArgs, RequestCanisterInstallArgs, WasmMemoryPersistenceArgs};
 pub use settings::RequestCanisterUpdateSettingsArgs;
 
-// TODO: Support Canister create + integration test
 // TODO: Canister get response functionality
 
 /// Request canister operations through Orbit
@@ -25,6 +26,8 @@ pub struct RequestCanisterArgs {
 #[derive(Debug, Clone, Subcommand)]
 #[clap(version, about, long_about = None)]
 pub enum RequestCanisterActionArgs {
+    /// Request to create a new canister (or register an existing one) in Orbit
+    Create(RequestCanisterCreateArgs),
     /// Request to upgrade the canister wasm
     Install(RequestCanisterInstallArgs),
     /// Request to call a canister method
@@ -50,6 +53,7 @@ impl RequestCanisterActionArgs {
         dfx_orbit: &DfxOrbit,
     ) -> anyhow::Result<RequestOperationInput> {
         match self {
+            RequestCanisterActionArgs::Create(args) => args.into_request(),
             RequestCanisterActionArgs::Install(args) => args.into_request(dfx_orbit).await,
             RequestCanisterActionArgs::Call(args) => args.into_request(dfx_orbit),
             RequestCanisterActionArgs::UpdateSettings(args) => args.into_request(dfx_orbit).await,
@@ -67,6 +71,8 @@ pub struct VerifyCanisterArgs {
 #[derive(Debug, Clone, Subcommand)]
 #[clap(version, about, long_about = None)]
 pub enum VerifyCanisterActionArgs {
+    /// Verify a create canister request
+    Create(RequestCanisterCreateArgs),
     /// Verify upgrade the canister wasm
     Install(RequestCanisterInstallArgs),
     /// Verify call a canister method
@@ -82,6 +88,7 @@ impl VerifyCanisterArgs {
         request: &GetRequestResponse,
     ) -> anyhow::Result<()> {
         match &self.action {
+            VerifyCanisterActionArgs::Create(args) => args.verify(dfx_orbit, request)?,
             VerifyCanisterActionArgs::Install(args) => args.verify(dfx_orbit, request)?,
             VerifyCanisterActionArgs::Call(args) => args.verify(dfx_orbit, request)?,
             VerifyCanisterActionArgs::UpdateSettings(args) => {
