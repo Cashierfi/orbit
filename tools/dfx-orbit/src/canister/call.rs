@@ -25,8 +25,12 @@ pub struct RequestCanisterCallArgs {
     #[clap(short = 'f', long, conflicts_with = "argument")]
     pub arg_file: Option<String>,
     /// Pass the argument as a raw hex string.
-    #[clap(short = 'f', long, conflicts_with = "argument, arg_file")]
+    #[clap(long, conflicts_with_all = ["argument", "arg_file"])]
     pub raw_arg: Option<String>,
+    /// Pass the argument as a file containing a raw hex string.
+    /// Use this for arguments too large for the command line.
+    #[clap(long, conflicts_with_all = ["argument", "arg_file", "raw_arg"])]
+    pub raw_arg_file: Option<String>,
     /// Specifies the amount of cycles to send on the call.
     #[clap(short, long)]
     pub with_cycles: Option<u64>,
@@ -39,7 +43,12 @@ impl RequestCanisterCallArgs {
         dfx_orbit: &DfxOrbit,
     ) -> anyhow::Result<RequestOperationInput> {
         let canister_id = dfx_orbit.canister_id(&self.canister)?;
-        let arg = parse_arguments(&self.argument, &self.arg_file, &self.raw_arg)?;
+        let arg = parse_arguments(
+            &self.argument,
+            &self.arg_file,
+            &self.raw_arg,
+            &self.raw_arg_file,
+        )?;
 
         Ok(RequestOperationInput::CallExternalCanister(
             CallExternalCanisterOperationInput {
@@ -60,7 +69,12 @@ impl RequestCanisterCallArgs {
         request: &GetRequestResponse,
     ) -> anyhow::Result<()> {
         let canister_id = dfx_orbit.canister_id(&self.canister)?;
-        let arg = parse_arguments(&self.argument, &self.arg_file, &self.raw_arg)?;
+        let arg = parse_arguments(
+            &self.argument,
+            &self.arg_file,
+            &self.raw_arg,
+            &self.raw_arg_file,
+        )?;
         let arg_checksum = arg.map(|arg| hex::encode(Sha256::digest(arg)));
 
         let RequestOperationDTO::CallExternalCanister(op) = &request.request.operation else {

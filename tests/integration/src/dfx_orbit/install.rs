@@ -123,6 +123,8 @@ fn canister_install(use_chunks: bool) {
         wasm: wasm.path().as_os_str().to_str().unwrap().to_string(),
         argument: None,
         arg_file: None,
+        raw_arg: None,
+        raw_arg_file: None,
         asset_canister: asset_canister.map(|p| p.to_text()),
     };
 
@@ -238,6 +240,8 @@ fn canister_upgrade_options_round_trip() {
         wasm: wasm.path().as_os_str().to_str().unwrap().to_string(),
         argument: None,
         arg_file: None,
+        raw_arg: None,
+        raw_arg_file: None,
         asset_canister: None,
     };
 
@@ -383,6 +387,8 @@ fn canister_upgrade_with_wasm_memory_persistence_keep() {
         wasm: wasm.path().as_os_str().to_str().unwrap().to_string(),
         argument: None,
         arg_file: None,
+        raw_arg: None,
+        raw_arg_file: None,
         asset_canister: None,
     };
     let args_without_keep = install_args(None);

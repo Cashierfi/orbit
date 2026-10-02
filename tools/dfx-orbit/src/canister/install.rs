@@ -43,6 +43,10 @@ pub struct RequestCanisterInstallArgs {
     /// Pass the argument as a raw hex-encoded byte string (e.g. the output of `didc encode`).
     #[clap(long, conflicts_with = "argument", conflicts_with = "arg_file")]
     pub raw_arg: Option<String>,
+    /// The path to a file containing the argument as a raw hex-encoded byte string
+    /// (e.g. the output of `didc encode`). Use this for arguments too large for the command line.
+    #[clap(long, conflicts_with_all = ["argument", "arg_file", "raw_arg"])]
+    pub raw_arg_file: Option<String>,
     /// The asset canister name or ID to upload module chunks to.
     #[clap(long)]
     pub asset_canister: Option<String>,
@@ -176,7 +180,12 @@ impl RequestCanisterInstallArgs {
         let module = std::fs::read(&self.wasm)
             .with_context(|| "Could not read Wasm file")?
             .to_vec();
-        let args = parse_arguments(&self.argument, &self.arg_file, &self.raw_arg)?;
+        let args = parse_arguments(
+            &self.argument,
+            &self.arg_file,
+            &self.raw_arg,
+            &self.raw_arg_file,
+        )?;
 
         Ok((module, args))
     }
@@ -333,6 +342,7 @@ mod tests {
             argument: None,
             arg_file: None,
             raw_arg: None,
+            raw_arg_file: None,
             asset_canister: None,
         }
     }

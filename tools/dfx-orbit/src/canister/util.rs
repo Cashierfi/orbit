@@ -18,6 +18,7 @@ pub(super) fn parse_arguments(
     arg_string: &Option<String>,
     arg_path: &Option<String>,
     raw_arg: &Option<String>,
+    raw_arg_path: &Option<String>,
 ) -> anyhow::Result<Option<Vec<u8>>> {
     // TODO: It would be really nice to be able to use `blob_from_arguments(..)` here, as in dfx, to get all the nice things such as help composing the argument.
     // First try to read the argument file, if it was provided
@@ -36,7 +37,20 @@ pub(super) fn parse_arguments(
         })
         .transpose()?;
 
-    let raw_arg = raw_arg.as_ref().map(hex::decode).transpose()?;
+    // Raw hex can come from a file, which avoids the OS limit on command line argument length
+    // (128 KiB per argument on Linux) for large encoded arguments.
+    let raw_arg = raw_arg_path
+        .as_ref()
+        .map(|path| {
+            std::fs::read_to_string(path)
+                .with_context(|| format!("Could not read raw argument file {path}"))
+        })
+        .transpose()?
+        .or_else(|| raw_arg.clone())
+        .map(|hex_string| {
+            hex::decode(hex_string.trim()).with_context(|| "Invalid hex-encoded argument")
+        })
+        .transpose()?;
     let arg = candid.or(raw_arg);
     Ok(arg)
 }
@@ -56,4 +70,51 @@ pub(super) fn display_arg_checksum(arg: &Option<String>) -> String {
     arg.as_ref()
         .map(|s| s.to_string())
         .unwrap_or(String::from("None"))
+}
+
+#[cfg(test)]
+mod tests {
+    #![allow(clippy::unwrap_used)]
+
+    use super::*;
+
+    #[test]
+    fn raw_arg_is_hex_decoded() {
+        let arg = parse_arguments(&None, &None, &Some("2a000000".to_string()), &None).unwrap();
+        assert_eq!(arg, Some(vec![0x2a, 0, 0, 0]));
+    }
+
+    #[test]
+    fn raw_arg_file_is_read_trimmed_and_hex_decoded() {
+        let path =
+            std::env::temp_dir().join(format!("dfx-orbit-raw-arg-{}.hex", std::process::id()));
+        std::fs::write(&path, "4449444c0000\n").unwrap();
+
+        let arg = parse_arguments(
+            &None,
+            &None,
+            &None,
+            &Some(path.to_string_lossy().to_string()),
+        );
+        std::fs::remove_file(&path).unwrap();
+
+        assert_eq!(arg.unwrap(), Some(candid::encode_args(()).unwrap()));
+    }
+
+    #[test]
+    fn missing_raw_arg_file_is_an_error() {
+        let arg = parse_arguments(
+            &None,
+            &None,
+            &None,
+            &Some("/nonexistent/arg.hex".to_string()),
+        );
+        assert!(arg.is_err());
+    }
+
+    #[test]
+    fn invalid_hex_is_an_error() {
+        let arg = parse_arguments(&None, &None, &Some("not-hex".to_string()), &None);
+        assert!(arg.is_err());
+    }
 }

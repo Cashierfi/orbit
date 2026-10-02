@@ -49,6 +49,7 @@ fn canister_call() {
         argument: None,
         arg_file: None,
         raw_arg: Some(String::from("2a000000")),
+        raw_arg_file: None,
         with_cycles: None,
     };
 
