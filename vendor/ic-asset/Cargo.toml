@@ -1,0 +1,43 @@
+# Vendored from https://github.com/dfinity/sdk at d65717bd6d0c172247c37dd23395c9fb13b2ba20
+# (src/canisters/frontend/ic-asset, v0.21.0), with the asset canister pagination fix from
+# dfinity/sdk#4432 backported. Upstream only ships that fix together with ic-agent 0.44, which
+# the rest of this workspace is not on yet. Drop this crate once the workspace moves to a
+# dfinity/sdk revision that includes #4432.
+[package]
+name = "ic-asset"
+version = "0.21.0"
+authors = ["DFINITY Stiftung"]
+edition = "2021"
+repository = "https://github.com/dfinity/sdk"
+license = "Apache-2.0"
+rust-version = "1.75.0"
+description = "Library for storing files in an asset canister."
+documentation = "https://docs.rs/ic-asset"
+categories = ["api-bindings", "data-structures"]
+keywords = ["internet-computer", "assets", "icp", "dfinity"]
+
+[dependencies]
+backoff = { version = "0.4.0", features = ["futures", "tokio"] }
+brotli = "6.0.0"
+candid = "0.10.4"
+derivative = "2.2.0"
+dfx-core = { git = "https://github.com/dfinity/sdk.git", rev = "d65717bd6d0c172247c37dd23395c9fb13b2ba20" }
+flate2 = "1.0.11"
+futures = "0.3.21"
+futures-intrusive = "0.4.0"
+globset = "0.4.9"
+hex = { version = "0.4.3", features = ["serde"] }
+ic-agent = { version = "0.38", features = ["pem"] }
+ic-utils = "0.38"
+itertools = "0.10.3"
+json5 = "0.4.1"
+mime = "0.3.16"
+mime_guess = "2.0.4"
+serde = "1.0"
+serde_bytes = "0.11.5"
+serde_json = "1.0.79"
+sha2 = "0.10.6"
+slog = { version = "2.5.2", features = ["max_level_trace"] }
+thiserror = "1.0.24"
+tokio = "1.35"
+walkdir = "2.3.2"
