@@ -14,6 +14,8 @@ members = [
     "tests/canister/impl",
     "tools/dfx-orbit",
 ]
+# Vendored third-party crates are built as path dependencies, not linted or tested as members.
+exclude = ["vendor/ic-asset"]
 
 [workspace.package]
 authors = ["DFINITY Stiftung"]
@@ -50,7 +52,7 @@ futures = "0.3"
 getrandom = { version = "0.2", features = ["custom"] }
 hex = "0.4"
 ic-agent = "0.38"
-ic-asset = { git = "https://github.com/dfinity/sdk.git", rev = "d65717bd6d0c172247c37dd23395c9fb13b2ba20" }
+ic-asset = { path = "vendor/ic-asset" }
 ic-certification = { git = "https://github.com/dfinity/response-verification", rev = "da70db93832f88ecc556ae082612aedec47d3816" }
 ic-certified-assets = { git = "https://github.com/dfinity/sdk.git", rev = "d65717bd6d0c172247c37dd23395c9fb13b2ba20" }
 ic-http-certification = { git = "https://github.com/dfinity/response-verification", rev = "da70db93832f88ecc556ae082612aedec47d3816" }
